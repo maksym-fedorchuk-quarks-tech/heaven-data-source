@@ -10,7 +10,7 @@ steps:
           --runtime=python310 \
           --trigger-http \
           --source=. \
-          --entry-point=events_data_scraper \
+          --entry-point=heaven_data_request_processor \
           --region=europe-west1 \
           --allow-unauthenticated \
           --service-account=data-service-account@publicdatasource.iam.gserviceaccount.com \
