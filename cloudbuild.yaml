@@ -1,0 +1,26 @@
+steps:
+  - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
+    entrypoint: "bash"
+    args:
+      - "-c"
+      - |
+        echo "Deploying heaven-data-source"
+        gcloud functions deploy heaven-data-source \
+          --gen2 \
+          --runtime=python310 \
+          --trigger-http \
+          --source=. \
+          --entry-point=events_data_scraper \
+          --region=europe-west1 \
+          --allow-unauthenticated \
+          --service-account=data-service-account@publicdatasource.iam.gserviceaccount.com \
+          --cpu=0.5 \
+          --memory=1024MB \
+          --timeout=60s \
+
+timeout: 1200s
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+  substitutionOption: ALLOW_LOOSE
+  requestedVerifyOption: VERIFIED
