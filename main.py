@@ -20,10 +20,15 @@ def generate_visitor_data(token):
 
 def token_exists(token):
     query = (
-        f"SELECT COUNT(*) FROM `heavens_data.tokens` "
-        f"WHERE token = '{token}' and valid_to >= CURRENT_TIMESTAMP()"
+        "SELECT COUNT(*) FROM `heavens_data.tokens` "
+        "WHERE token = @token and valid_to >= CURRENT_TIMESTAMP()"
     )
-    results = client.query(query).result()
+    job_config = bigquery.QueryJobConfig(
+        query_parameters=[
+            bigquery.ScalarQueryParameter("token", "STRING", token)
+        ]
+    )
+    results = client.query(query, job_config=job_config).result()
     return any(row.count > 0 for row in results)
 
 
