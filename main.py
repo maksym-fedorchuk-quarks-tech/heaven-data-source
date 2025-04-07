@@ -1,5 +1,8 @@
 import os
 import time
+import hashlib
+from random import randint
+
 from datetime import datetime, timedelta, timezone
 from loguru import logger
 import functions_framework
@@ -8,15 +11,22 @@ from google.cloud import bigquery
 client = bigquery.Client()
 
 
-def generate_visitor_data(token):
-    return {
-        "token": token,
-        "visitors": [
-            {"id": 1, "name": "Visitor A", "visit_time": datetime.now(timezone.utc).isoformat()},
-            {"id": 2, "name": "Visitor B", "visit_time": datetime.now(timezone.utc).isoformat()},
-        ]
-    }
+def generate_installs_data(token):
+    visitor_data = []
+    for i in range(randint(701, 899)):
+        install_id = hashlib.md5(f"{token}_{i}".encode()).hexdigest()
+        visitor_data.append({
+            "install_id": install_id,
+            "install_time": datetime.now(timezone.utc).isoformat(),
 
+            "utm_source": "test_source",
+            "utm_campaign": "test_campaign",
+            "initial_utm_medium": "test_medium",
+            "referrer": "test_referrer",
+
+        })
+
+    return visitor_data
 
 def token_exists(token):
     query = (
@@ -38,7 +48,7 @@ def heaven_data_request_processor(request):
     if not token:
         return {"error": "Authorization token is required"}, 401
 
-    if not token_exists(token):
+    if len(token) != 64 or not token_exists(token):
         return {"error": "Invalid token"}, 403
 
     date_yesterday = (datetime.now(timezone.utc) - timedelta(days=1)).strftime('%Y-%m-%d')
@@ -47,7 +57,7 @@ def heaven_data_request_processor(request):
 
     try:
         time.sleep(1)
-        visitor_data = generate_visitor_data(token)
+        visitor_data = generate_installs_data(token)
         return 'heaven_data_request_processor', 200
 
     except Exception as exception:
