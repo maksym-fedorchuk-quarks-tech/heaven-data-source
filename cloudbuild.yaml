@@ -16,7 +16,26 @@ steps:
           --service-account=data-service-account@publicdatasource.iam.gserviceaccount.com \
           --cpu=0.5 \
           --memory=1024MB \
-          --timeout=60s \
+          --timeout=60s
+
+  - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
+    entrypoint: "bash"
+    args:
+      - "-c"
+      - |
+        echo "Deploying token-generator"
+        gcloud functions deploy token-generator \
+          --gen2 \
+          --runtime=python310 \
+          --trigger-http \
+          --source=token-generator/. \
+          --entry-point=heaven_data_token \
+          --region=europe-west1 \
+          --allow-unauthenticated \
+          --service-account=data-service-account@publicdatasource.iam.gserviceaccount.com \
+          --cpu=0.5 \
+          --memory=1024MB \
+          --timeout=60s
 
 timeout: 1200s
 
