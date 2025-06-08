@@ -28,5 +28,14 @@ def heaven_data_token(request):
     insert_errors = client.insert_rows_json(table=TOKEN_TABLE_PATH, json_rows=[new_token_row])
     if insert_errors:
         logger.error(f"Errors while inserting new token: {insert_errors}")
+        return {
+            "status": 500,
+            "error": "Internal Server Error"
+        }
+
     else:
         logger.success(f"Rows successfully inserted for {user_email}")
+        return {
+            "status": 200,
+            "token": new_token_row["token"]
+        }
