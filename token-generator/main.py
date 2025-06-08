@@ -13,8 +13,8 @@ def generate_token_row(email: str) -> dict[str, str]:
     return {
         "email": email,
         "token": hashlib.shake_128(email.encode()).hexdigest(16),
-        "valid_from": datetime.now(timezone.utc),
-        "valid_to": datetime.now(timezone.utc) + timedelta(days=365)
+        "valid_from": datetime.now(timezone.utc).strftime('%Y-%m-%d'),
+        "valid_to": (datetime.now(timezone.utc) + timedelta(days=365)).strftime('%Y-%m-%d')
     }
 
 
@@ -25,17 +25,17 @@ def heaven_data_token(request):
     client = bigquery.Client()
     new_token_row = generate_token_row(user_email)
 
-    insert_errors = client.insert_rows_json(table=TOKEN_TABLE_PATH, json_rows=[new_token_row])
-    if insert_errors:
-        logger.error(f"Errors while inserting new token: {insert_errors}")
-        return {
-            "status": 500,
-            "error": "Internal Server Error"
-        }
-
-    else:
+    try:
+        client.insert_rows_json(table=TOKEN_TABLE_PATH, json_rows=[new_token_row])
         logger.success(f"Rows successfully inserted for {user_email}")
         return {
             "status": 200,
             "token": new_token_row["token"]
+        }
+
+    except Exception as insert_exception:
+        logger.error(f"Error while inserting new token for {user_email}: {insert_exception}")
+        return {
+            "status": 500,
+            "error": "Internal Server Error"
         }
